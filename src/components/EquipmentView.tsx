@@ -81,6 +81,7 @@ export default function EquipmentView() {
   };
 
   const loadEquipment = async () => {
+    console.log('Loading equipment...');
     const { data, error } = await supabase
       .from('equipment')
       .select(`
@@ -95,11 +96,15 @@ export default function EquipmentView() {
       `)
       .order('name');
 
+    console.log('Equipment query result:', { data, error });
+
     if (error) {
       console.error('Error loading equipment:', error);
+      alert('Error loading equipment: ' + error.message);
       return;
     }
 
+    console.log('Setting equipment data:', data);
     setEquipment(data || []);
     if (data && data.length > 0 && !selectedEquipment) {
       setSelectedEquipment(data[0]);
@@ -332,21 +337,29 @@ export default function EquipmentView() {
       </div>
 
       <div className="bg-white rounded-lg p-6 mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Equipment:</label>
-        <select
-          value={selectedEquipment?.id || ''}
-          onChange={(e) => {
-            const eq = equipment.find((eq) => eq.id === e.target.value);
-            setSelectedEquipment(eq || null);
-          }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          {equipment.map((eq) => (
-            <option key={eq.id} value={eq.id}>
-              {eq.name} ({eq.serial_number}) - {eq.current_hours} hrs
-            </option>
-          ))}
-        </select>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Equipment: {equipment.length > 0 ? `(${equipment.length} items)` : '(loading...)'}
+        </label>
+        {equipment.length === 0 ? (
+          <div className="px-4 py-8 border border-gray-300 rounded-lg text-center text-gray-500">
+            No equipment found. Check browser console for errors.
+          </div>
+        ) : (
+          <select
+            value={selectedEquipment?.id || ''}
+            onChange={(e) => {
+              const eq = equipment.find((eq) => eq.id === e.target.value);
+              setSelectedEquipment(eq || null);
+            }}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {equipment.map((eq) => (
+              <option key={eq.id} value={eq.id}>
+                {eq.name} ({eq.serial_number}) - {eq.current_hours} hrs
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {selectedEquipment && (
